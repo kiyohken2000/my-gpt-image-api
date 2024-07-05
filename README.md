@@ -18,7 +18,7 @@ curl -X POST \
 使えるモデル
 
 - 実写系
-  - votepurchase/juggernautXL_hyper_8step_sfw(予定中)
+  - votepurchase/votepurchase-juggernautXL_hyper_8step_sfw
   - votepurchase/NSFW-gen-v2
 - 実写系(Pony)
   - votepurchase/votepurchase-waiREALCN_v10
@@ -30,9 +30,9 @@ curl -X POST \
   - votepurchase/votepurchase-ponyDiffusionV6XL
   - votepurchase/votepurchase-7thAnimeXLPonyA_v10
 - フィギュア
-  - PVCStyleModelMovable_beta27Realistic(予定中)
+  - votepurchase/votepurchase-PVCStyleModelMovable_beta27Realistic
 - フィギュア(Pony)
-  - votepurchase/PVCStyleModelMovable_pony151(予定中)
+  - votepurchase/votepurchase-PVCStyleModelMovable_pony151
 
 ## レスポンス
 
