@@ -1,0 +1,26 @@
+## 実行
+
+```
+python -c "import test; test.mygptimage()"
+```
+
+## パッケージ書き出し
+
+```
+pip freeze > requirements.txt
+```
+
+## パッケージインストール
+
+```
+pip install -r requirements.txt
+```
+
+## 【GCP初心者向け】Cloud Runでサーバーレスな超簡易Web APIを無料で作る
+## https://qiita.com/dzbt_dzbt/items/dde54e3417ae5c17730b
+## コマンド実行後、新しいリビジョンの編集とデプロイを忘れずに
+## hey-abeはGCPのプロジェクト名
+gcloud builds submit --tag gcr.io/hey-abe/mygpt-image-api --project hey-abe
+
+## アップロードされるファイルの確認
+gcloud meta list-files-for-upload

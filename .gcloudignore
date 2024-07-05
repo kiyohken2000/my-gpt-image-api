@@ -1,0 +1,8 @@
+LICENSE
+README.md
+.git
+.gitignore
+.DS_Store
+commands.text
+__pycache__
+test.py
