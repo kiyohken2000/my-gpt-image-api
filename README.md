@@ -15,6 +15,25 @@ curl -X POST \
   }'
 ```
 
+使えるモデル
+
+- 実写系
+  - votepurchase/juggernautXL_hyper_8step_sfw(予定中)
+  - votepurchase/NSFW-gen-v2
+- 実写系(Pony)
+  - votepurchase/votepurchase-waiREALCN_v10
+  - votepurchase/votepurchase-waiREALMIX_v70
+- アニメ系
+  - votepurchase/votepurchase-animagine-xl-3.1
+  - votepurchase/votepurchase-AnythingXL_xl
+- アニメ系(Pony)
+  - votepurchase/votepurchase-ponyDiffusionV6XL
+  - votepurchase/votepurchase-7thAnimeXLPonyA_v10
+- フィギュア
+  - PVCStyleModelMovable_beta27Realistic(予定中)
+- フィギュア(Pony)
+  - votepurchase/PVCStyleModelMovable_pony151(予定中)
+
 ## レスポンス
 
 ```json
