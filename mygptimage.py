@@ -16,12 +16,17 @@ def main():
     recieved_model_name = str(request_dict['model'])
     received_prompt = str(request_dict['prompt'])
     received_negative_prompt = str(request_dict['negative_prompt'])
+    print('受信したモデル', recieved_model_name)
+    print('受信したプロンプト', received_prompt)
+    print('受信したネガティブプロンプト', received_negative_prompt)
 
     base64_image = generate_and_encode_image(
       model=recieved_model_name,
       prompt=received_prompt,
       negative_prompt=received_negative_prompt
     )
+    print("Base64エンコードされた画像 (prefixあり):")
+    print(base64_image[:100] + "...") # 最初の100文字だけを表示
 
     # 結果の出力
     return jsonify({'image': base64_image}), 200
