@@ -42,7 +42,12 @@ def main():
 
   except Exception as e:
     print('error', e)
-    return jsonify({'error': str(e)}), 500
+    error_response = jsonify({'error': str(e)})
+    
+    # エラーレスポンス送信後にサーバーをシャットダウン
+    Timer(1, shutdown_server).start()
+    
+    return error_response, 500
   
 if __name__ == "__main__":
   app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
