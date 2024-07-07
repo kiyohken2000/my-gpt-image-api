@@ -2,9 +2,13 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from image_generator import generate_and_encode_image
+from threading import Timer
 
 app = Flask(__name__)
 CORS(app)
+
+def shutdown_server():
+    os._exit(0)
 
 @app.route('/', methods=['POST'])
 def main():
@@ -29,11 +33,16 @@ def main():
     print(base64_image[:100] + "...") # 最初の100文字だけを表示
 
     # 結果の出力
-    return jsonify({'image': base64_image}), 200
+    response = jsonify({'image': base64_image})
+    
+    # レスポンス送信後にサーバーをシャットダウン
+    Timer(1, shutdown_server).start()
+    
+    return response, 200
 
   except Exception as e:
     print('error', e)
     return jsonify({'error': str(e)}), 500
   
 if __name__ == "__main__":
-  app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+  app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
