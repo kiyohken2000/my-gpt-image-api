@@ -36,7 +36,7 @@ def main():
     response = jsonify({'image': base64_image})
     
     # レスポンス送信後にサーバーをシャットダウン
-    Timer(1, shutdown_server).start()
+    # Timer(1, shutdown_server).start()
     
     return response, 200
 
