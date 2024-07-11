@@ -4,6 +4,7 @@ from flask_cors import CORS
 from image_generator import generate_and_encode_image
 from threading import Timer
 import datetime
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 CORS(app)
@@ -15,7 +16,7 @@ def shutdown_server():
 def main():
   try:
     # タイムスタンプを生成（例：20240705_123456）
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).strftime("%Y/%m/%d %H:%M:%S")
     print('関数の開始', timestamp)
     
     # 受信したテキストを代入
