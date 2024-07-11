@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from image_generator import generate_and_encode_image
 from threading import Timer
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +14,9 @@ def shutdown_server():
 @app.route('/', methods=['POST'])
 def main():
   try:
-    print('関数の開始')
+    # タイムスタンプを生成（例：20240705_123456）
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    print('関数の開始', timestamp)
     
     # 受信したテキストを代入
     request_dict = request.get_json()
