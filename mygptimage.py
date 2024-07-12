@@ -49,7 +49,7 @@ def main():
     error_response = jsonify({'error': str(e)})
     
     # エラーレスポンス送信後にサーバーをシャットダウン
-    Timer(1, shutdown_server).start()
+    Timer(0.1, shutdown_server).start()
     
     return error_response, 500
   
