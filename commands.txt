@@ -2,6 +2,7 @@
 
 ```
 python -c "import test; test.mygptimage()"
+python -c "import asyncio; import test; asyncio.run(test.mygptimage())"
 ```
 
 ## パッケージ書き出し

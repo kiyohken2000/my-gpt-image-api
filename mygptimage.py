@@ -2,7 +2,9 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from image_generator import generate_and_encode_image
+from image_uploader import upload_function
 from threading import Timer
+import asyncio
 import datetime
 from zoneinfo import ZoneInfo
 
@@ -10,7 +12,10 @@ app = Flask(__name__)
 CORS(app)
 
 def shutdown_server():
-    os._exit(0)
+  os._exit(0)
+
+def run_upload_function(base64_image):
+  asyncio.run(upload_function(base64_image))
 
 @app.route('/', methods=['POST'])
 def main():
@@ -35,6 +40,10 @@ def main():
     )
     print("Base64エンコードされた画像 (prefixあり):")
     print(base64_image[:100] + "...") # 最初の100文字だけを表示
+
+    # upload_functionを使用して画像をアップロード（非同期関数を同期的に実行）
+    run_upload_function(base64_image)
+    print("画像のアップロードを開始しました。")
 
     # 結果の出力
     response = jsonify({'image': base64_image})
