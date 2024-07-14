@@ -14,8 +14,8 @@ CORS(app)
 def shutdown_server():
   os._exit(0)
 
-def run_upload_function(base64_image):
-  asyncio.run(upload_function(base64_image))
+def run_upload_function(base64string, model_name, prompt, negative_prompt):
+  asyncio.run(upload_function(base64string, model_name, prompt, negative_prompt))
 
 @app.route('/', methods=['POST'])
 def main():
@@ -42,7 +42,12 @@ def main():
     print(base64_image[:100] + "...") # 最初の100文字だけを表示
 
     # upload_functionを使用して画像をアップロード（非同期関数を同期的に実行）
-    run_upload_function(base64_image)
+    run_upload_function(
+      base64string=base64_image,
+      model_name=recieved_model_name,
+      prompt=received_prompt,
+      negative_prompt=received_negative_prompt
+    )
     print("画像のアップロードを開始しました。")
 
     # 結果の出力

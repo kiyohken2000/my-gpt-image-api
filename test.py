@@ -13,7 +13,12 @@ async def mygptimage():
   print(base64_image[:100] + "...") # 最初の100文字だけを表示
 
   # 画像をアップロード
-  result = await upload_function(base64_image)
+  result = await upload_function(
+     base64string=base64_image,
+     model_name=model,
+     prompt=prompt,
+     negative_prompt=negative_prompt
+  )
   if result:
       print(f"Image URL: {result['imageUrl']}")
       print(f"Viewer URL: {result['viewerUrl']}")
