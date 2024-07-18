@@ -16,9 +16,16 @@ async def upload_function(base64string, model_name, prompt, negative_prompt):
     prefix = "data:image/png;base64,"
     if base64string.startswith(prefix):
         base64string = base64string[len(prefix):]
+
+    # Firestoreからkeyを取得
+    key_doc = db.collection('key').document('imgbb').get()
+    if not key_doc.exists:
+      raise Exception("ImgBB key not found in Firestore")
+    imgbb_key = key_doc.to_dict()['key']
+
     url = "https://api.imgbb.com/1/upload"
     params = {
-      "key": "266b329fff012399fab848022e6d0229"
+      "key": imgbb_key
     }
     
     data = aiohttp.FormData()
