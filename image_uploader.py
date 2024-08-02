@@ -53,7 +53,9 @@ async def upload_function(base64string, model_name, prompt, negative_prompt):
       'modelName': model_name,
       'prompt': prompt,
       'negativePrompt': negative_prompt,
-      'createdAt': firestore.SERVER_TIMESTAMP
+      'createdAt': firestore.SERVER_TIMESTAMP,
+      'like': 0,
+      'dislike': 0,
     })
 
     print(f"Document successfully written with ID: {doc_id}")

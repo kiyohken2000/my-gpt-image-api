@@ -3,3 +3,4 @@ __pycache__
 meiryo.ttc
 serviceAccountKey.json
 syncAlgolia.py
+add_like_field.py
