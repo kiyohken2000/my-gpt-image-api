@@ -6,3 +6,6 @@ README.md
 commands.text
 __pycache__
 test.py
+syncAlgolia.py
+add_like_field.py
+add_like_algolia.py
