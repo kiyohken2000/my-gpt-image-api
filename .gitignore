@@ -5,3 +5,4 @@ serviceAccountKey.json
 syncAlgolia.py
 add_like_field.py
 add_like_algolia.py
+initialize_like_counts.py
