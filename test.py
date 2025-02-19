@@ -4,9 +4,9 @@ from image_uploader import upload_function
 
 async def mygptimage():
   # 画像を生成してBase64エンコード
-  model = "votepurchase/votepurchase-7thAnimeXLPonyA_v10"
+  model = "retwpay/retwpay-novaAnimeXL_ilV40HappyValentine"
   prompt = "a girl"
-  negative_prompt = "nsfw, (low quality, worst quality:1.2), very displeasing, 3d, watermark, signature, ugly, poorly drawn"
+  negative_prompt = ""
 
   base64_image = generate_and_encode_image(model, prompt, negative_prompt)
   print("Base64エンコードされた画像 (prefixあり):")
