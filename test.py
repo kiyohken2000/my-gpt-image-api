@@ -4,7 +4,7 @@ from image_uploader import upload_function
 
 async def mygptimage():
   # 画像を生成してBase64エンコード
-  model = "retwpay/waiNSFWIllustrious_v110"
+  model = "retwpay/shiitakeMix_v10"
   prompt = "a girl"
   negative_prompt = ""
 

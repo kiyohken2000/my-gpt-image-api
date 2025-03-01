@@ -6,3 +6,4 @@ syncAlgolia.py
 add_like_field.py
 add_like_algolia.py
 initialize_like_counts.py
+algolia_delete_old_records.py
