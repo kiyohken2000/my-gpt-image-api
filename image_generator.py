@@ -1,7 +1,31 @@
+import gradio_client
+import gradio_client.utils
 from gradio_client import Client
 import os
 import datetime
 import base64
+
+# サーバー側と同様のモンキーパッチをクライアント側にも適用
+old_get_type = gradio_client.utils.get_type
+def new_get_type(schema):
+    if isinstance(schema, bool):
+        return "bool"
+    return old_get_type(schema)
+
+gradio_client.utils.get_type = new_get_type
+
+# _json_schema_to_python_typeの修正も追加
+old_json_schema_to_python_type = gradio_client.utils._json_schema_to_python_type
+def new_json_schema_to_python_type(schema, defs=None):
+    if isinstance(schema, bool):
+        return "bool"
+    try:
+        return old_json_schema_to_python_type(schema, defs)
+    except Exception as e:
+        # エラーが発生した場合は汎用的な型を返す
+        return "any"
+
+gradio_client.utils._json_schema_to_python_type = new_json_schema_to_python_type
 
 def generate_and_encode_image(model, prompt, negative_prompt):
     client = Client(model)

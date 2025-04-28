@@ -4,9 +4,9 @@ from image_uploader import upload_function
 
 async def mygptimage():
   # 画像を生成してBase64エンコード
-  model = "retwpay/shiitakeMix_v10"
+  model = "retwpay/waiNSFWIllustrious_v110"
   prompt = "a girl"
-  negative_prompt = ""
+  negative_prompt = "modern, recent, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, signature, simple background, conjoined,bad ai-generated"
 
   base64_image = generate_and_encode_image(model, prompt, negative_prompt)
   print("Base64エンコードされた画像 (prefixあり):")
