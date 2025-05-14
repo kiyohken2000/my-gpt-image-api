@@ -1,9 +1,6 @@
 ## 実行
 
 ```
-python test.py
-python test_connection.py
-python -c "import test; test.mygptimage()"
 python -c "import asyncio; import test; asyncio.run(test.mygptimage())"
 python algolia_delete_old_records.py
 ```

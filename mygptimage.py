@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from image_generator import generate_and_encode_image
 from image_uploader import upload_function
+from ng_word_checker import check_ng_words
 from threading import Timer
 import asyncio
 import datetime
@@ -32,6 +33,14 @@ def main():
     print('受信したモデル', recieved_model_name)
     print('受信したプロンプト', received_prompt)
     print('受信したネガティブプロンプト', received_negative_prompt)
+
+    # プロンプトにNGワードが含まれているかチェック
+    has_ng_word, found_ng_words = check_ng_words(received_prompt)
+    if has_ng_word:
+      error_msg = f"プロンプトにNGワードが含まれています: {', '.join(found_ng_words)}"
+      print(error_msg)
+      error_response = jsonify({'error': error_msg})
+      return error_response, 400
 
     base64_image = generate_and_encode_image(
       model=recieved_model_name,
