@@ -7,3 +7,4 @@ add_like_field.py
 add_like_algolia.py
 initialize_like_counts.py
 algolia_delete_old_records.py
+algolia_keep_latest_records.py 
