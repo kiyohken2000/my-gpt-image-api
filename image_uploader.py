@@ -12,35 +12,40 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-async def upload_to_imgbb(base64string, imgbb_key):
-    """ImgBBにアップロードする関数"""
+TADAUP_API_KEY = "AoLU ets7 2zh3 gvqc cTEe BHfp"
+
+async def upload_to_tadaup(base64string):
+    """ただのうｐろだにアップロードする関数"""
     try:
         # プレフィックスを削除
         prefix = "data:image/png;base64,"
         if base64string.startswith(prefix):
             base64string = base64string[len(prefix):]
 
-        url = "https://api.imgbb.com/1/upload"
-        params = {
-            "key": imgbb_key
-        }
-        
+        # base64をバイナリデータに変換
+        binary_data = base64.b64decode(base64string)
+
+        url = "https://tadaup.jp/wp-json/custom/v1/upload"
+        auth = aiohttp.BasicAuth("API", TADAUP_API_KEY)
+
         data = aiohttp.FormData()
-        data.add_field('image', base64string)
-        
+        data.add_field('file[]', io.BytesIO(binary_data), filename='image.png', content_type='image/png')
+        data.add_field('r18', 'yes')
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=data, params=params) as response:
+            async with session.post(url, data=data, auth=auth) as response:
                 response.raise_for_status()
-                data = await response.json()
-                
-        image_url = data["data"]["url"]
-        viewer_url = data["data"]["url_viewer"]
-        thumb = data["data"]["thumb"]["url"]
-        
-        return {"imageUrl": image_url, "viewerUrl": viewer_url, "thumb": thumb}
-    
+                result = await response.json()
+
+        if not result.get("success"):
+            raise Exception(f"Upload failed: {result}")
+
+        image_url = result["source_url"]
+
+        return {"imageUrl": image_url, "viewerUrl": image_url, "thumb": image_url}
+
     except Exception as e:
-        print(f"ImgBB upload error: {e}")
+        print(f"Tadaup upload error: {e}")
         return None
 
 async def upload_to_catbox(base64string, userhash):
@@ -79,12 +84,6 @@ async def upload_to_catbox(base64string, userhash):
 
 async def upload_function(base64string, model_name, prompt, negative_prompt):
     try:
-        # ImgBBのkeyをFirestoreから取得
-        key_doc = db.collection('key').document('imgbb').get()
-        if not key_doc.exists:
-            raise Exception("ImgBB key not found in Firestore")
-        imgbb_key = key_doc.to_dict()['key']
-        
         # catboxのuserhashをFirestoreから取得 (なければデフォルト値を使用)
         catbox_doc = db.collection('key').document('catbox').get()
         catbox_userhash = '29b715e9a63037b830a7a6e7f'
@@ -92,18 +91,18 @@ async def upload_function(base64string, model_name, prompt, negative_prompt):
             catbox_data = catbox_doc.to_dict()
             if 'userhash' in catbox_data:
                 catbox_userhash = catbox_data['userhash']
-        
-        # まずImgBBにアップロード試行
-        upload_result = await upload_to_imgbb(base64string, imgbb_key)
-        
-        # ImgBBアップロード失敗した場合はcatboxにアップロード試行
+
+        # まずただのうｐろだにアップロード試行
+        upload_result = await upload_to_tadaup(base64string)
+
+        # ただのうｐろだ失敗した場合はcatboxにアップロード試行
         if upload_result is None:
-            print("ImgBB upload failed, trying catbox.moe...")
+            print("Tadaup upload failed, trying catbox.moe...")
             upload_result = await upload_to_catbox(base64string, catbox_userhash)
-            
+
             # catboxも失敗した場合
             if upload_result is None:
-                print("Both ImgBB and catbox uploads failed")
+                print("Both Tadaup and catbox uploads failed")
                 return None
         
         # アップロード先に関わらず、Firestoreにデータを保存

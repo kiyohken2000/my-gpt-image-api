@@ -1,4 +1,5 @@
 __pycache__
+_temp/
 .DS_Store
 meiryo.ttc
 serviceAccountKey.json
