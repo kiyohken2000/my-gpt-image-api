@@ -12,55 +12,116 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-TADAUP_API_KEY = "AoLU ets7 2zh3 gvqc cTEe BHfp"
 
-async def upload_to_tadaup(base64string):
-    """ただのうｐろだにアップロードする関数"""
+def _base64_to_binary(base64string):
+    """data URIのプレフィックスを除去してバイナリデータに変換する"""
+    prefix = "data:image/png;base64,"
+    if base64string.startswith(prefix):
+        base64string = base64string[len(prefix):]
+    return base64.b64decode(base64string)
+
+
+async def upload_to_imgpile(base64string, api_key):
+    """imgpile (imgpile.com) にアップロードする関数"""
     try:
-        # プレフィックスを削除
-        prefix = "data:image/png;base64,"
-        if base64string.startswith(prefix):
-            base64string = base64string[len(prefix):]
+        binary_data = _base64_to_binary(base64string)
 
-        # base64をバイナリデータに変換
-        binary_data = base64.b64decode(base64string)
-
-        url = "https://tadaup.jp/wp-json/custom/v1/upload"
-        auth = aiohttp.BasicAuth("API", TADAUP_API_KEY)
+        # アップロードは cdn.imgpile.com 宛でないと 421 になる
+        url = "https://cdn.imgpile.com/api/v1/media"
+        headers = {"Authorization": f"Bearer {api_key}"}
 
         data = aiohttp.FormData()
-        data.add_field('file[]', io.BytesIO(binary_data), filename='image.png', content_type='image/png')
-        data.add_field('r18', 'yes')
+        data.add_field('file', io.BytesIO(binary_data), filename='generated_image.png', content_type='image/png')
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=data, auth=auth) as response:
+            async with session.post(url, data=data, headers=headers) as response:
+                response.raise_for_status()
+                result = await response.json()
+
+        media = result["media"]
+        filename = media["filename"]
+        ext = media["ext"]
+        slug = media["slug"]
+
+        # レスポンスにURLは含まれないため slug / filename から組み立てる
+        image_url = f"https://cdn.imgpile.com/f/{filename}.{ext}"
+        viewer_url = f"https://imgpile.com/i/{slug}"
+        thumb = f"https://cdn.imgpile.com/f/{filename}_xs.{ext}"
+
+        return {"imageUrl": image_url, "viewerUrl": viewer_url, "thumb": thumb}
+
+    except Exception as e:
+        print(f"imgpile upload error: {e}")
+        return None
+
+
+async def upload_to_imge(base64string, api_key):
+    """im.ge (im.ge) にアップロードする関数"""
+    try:
+        binary_data = _base64_to_binary(base64string)
+
+        url = "https://im.ge/api/v1/upload"
+        headers = {"Authorization": f"Bearer {api_key}"}
+
+        data = aiohttp.FormData()
+        data.add_field('file', io.BytesIO(binary_data), filename='generated_image.png', content_type='image/png')
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=data, headers=headers) as response:
+                response.raise_for_status()
+                result = await response.json()
+
+        data_dict = result["data"]
+        image_url = data_dict.get("direct_url") or data_dict["image"]["image"]["url"]
+        viewer_url = data_dict.get("viewer_url") or data_dict.get("url_viewer") or image_url
+        thumb = data_dict.get("thumb_url") or image_url
+
+        return {"imageUrl": image_url, "viewerUrl": viewer_url, "thumb": thumb}
+
+    except Exception as e:
+        print(f"im.ge upload error: {e}")
+        return None
+
+
+async def upload_to_imghippo(base64string, api_key):
+    """Imghippo (imghippo.com) にアップロードする関数"""
+    try:
+        binary_data = _base64_to_binary(base64string)
+
+        url = "https://api.imghippo.com/v1/upload"
+
+        data = aiohttp.FormData()
+        data.add_field('api_key', api_key)
+        data.add_field('title', 'generated_image')
+        data.add_field('file', io.BytesIO(binary_data), filename='generated_image.png', content_type='image/png')
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=data) as response:
                 response.raise_for_status()
                 result = await response.json()
 
         if not result.get("success"):
             raise Exception(f"Upload failed: {result}")
 
-        image_url = result["source_url"]
+        data_dict = result["data"]
+        image_url = data_dict["url"]
+        viewer_url = data_dict.get("view_url", image_url)
 
-        return {"imageUrl": image_url, "viewerUrl": image_url, "thumb": image_url}
+        # Imghippoはサムネイルを別途提供しないので同じURLを使用
+        return {"imageUrl": image_url, "viewerUrl": viewer_url, "thumb": image_url}
 
     except Exception as e:
-        print(f"Tadaup upload error: {e}")
+        print(f"Imghippo upload error: {e}")
         return None
+
 
 async def upload_to_catbox(base64string, userhash):
     """catbox.moeにアップロードする関数 (ライブラリなし)"""
     try:
-        # プレフィックスを削除
-        prefix = "data:image/png;base64,"
-        if base64string.startswith(prefix):
-            base64string = base64string[len(prefix):]
-        
-        # base64をバイナリデータに変換
-        binary_data = base64.b64decode(base64string)
-        
+        binary_data = _base64_to_binary(base64string)
+
         url = "https://catbox.moe/user/api.php"
-        
+
         # FormDataを作成
         data = aiohttp.FormData()
         data.add_field('reqtype', 'fileupload')
@@ -68,46 +129,65 @@ async def upload_to_catbox(base64string, userhash):
         data.add_field('userhash', userhash)
         # ファイル名を適当に設定
         data.add_field('fileToUpload', io.BytesIO(binary_data), filename='generated_image.png', content_type='image/png')
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=data) as response:
                 response.raise_for_status()
                 # catboxは単純にURLの文字列を返す
                 image_url = await response.text()
-                
+
         # catboxはサムネイルやビューアーURLなどを別途提供しないので、同じURLを使用
         return {"imageUrl": image_url, "viewerUrl": image_url, "thumb": image_url}
-    
+
     except Exception as e:
         print(f"Catbox upload error: {e}")
         return None
 
+
+def _get_key_doc(doc_name):
+    """Firestoreの key コレクションからドキュメントを取得する (なければ空dict)"""
+    doc = db.collection('key').document(doc_name).get()
+    if doc.exists:
+        return doc.to_dict() or {}
+    return {}
+
+
 async def upload_function(base64string, model_name, prompt, negative_prompt):
     try:
+        # 各アップローダのAPIキーをFirestoreから取得
+        imgpile_key = _get_key_doc('imgpile').get('key')
+        imge_key = _get_key_doc('imge').get('key')
+        imghippo_key = _get_key_doc('imghippo').get('key')
+
         # catboxのuserhashをFirestoreから取得 (なければデフォルト値を使用)
-        catbox_doc = db.collection('key').document('catbox').get()
-        catbox_userhash = '29b715e9a63037b830a7a6e7f'
-        if catbox_doc.exists:
-            catbox_data = catbox_doc.to_dict()
-            if 'userhash' in catbox_data:
-                catbox_userhash = catbox_data['userhash']
+        catbox_userhash = _get_key_doc('catbox').get('userhash', '29b715e9a63037b830a7a6e7f')
 
-        # まずただのうｐろだにアップロード試行
-        upload_result = await upload_to_tadaup(base64string)
+        upload_result = None
 
-        # ただのうｐろだ失敗した場合はcatboxにアップロード試行
+        # imgpile → im.ge → Imghippo → catbox の順にアップロードを試行
+        if imgpile_key:
+            upload_result = await upload_to_imgpile(base64string, imgpile_key)
+
+        if upload_result is None and imge_key:
+            print("imgpile upload failed, trying im.ge...")
+            upload_result = await upload_to_imge(base64string, imge_key)
+
+        if upload_result is None and imghippo_key:
+            print("im.ge upload failed, trying Imghippo...")
+            upload_result = await upload_to_imghippo(base64string, imghippo_key)
+
         if upload_result is None:
-            print("Tadaup upload failed, trying catbox.moe...")
+            print("Imghippo upload failed, trying catbox.moe...")
             upload_result = await upload_to_catbox(base64string, catbox_userhash)
 
-            # catboxも失敗した場合
-            if upload_result is None:
-                print("Both Tadaup and catbox uploads failed")
-                return None
-        
+        # すべて失敗した場合
+        if upload_result is None:
+            print("All uploads failed")
+            return None
+
         # アップロード先に関わらず、Firestoreにデータを保存
         image_url = upload_result["imageUrl"]
-        viewer_url = upload_result["viewerUrl"] 
+        viewer_url = upload_result["viewerUrl"]
         thumb = upload_result["thumb"]
 
         # Firestoreにデータを保存
@@ -129,9 +209,9 @@ async def upload_function(base64string, model_name, prompt, negative_prompt):
         })
 
         print(f"Document successfully written with ID: {doc_id}")
-        
+
         return upload_result
-    
+
     except Exception as e:
         print(f"upload function error: {e}")
         return None
