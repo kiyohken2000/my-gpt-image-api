@@ -26,27 +26,22 @@ async def upload_to_imgpile(base64string, api_key):
     try:
         binary_data = _base64_to_binary(base64string)
 
-        # アップロードは cdn.imgpile.com 宛でないと 421 になる
-        url = "https://cdn.imgpile.com/api/v1/media"
+        # 新API: 生バイトを POST /uploads に送る（multipartではなく --data-binary 相当）
+        url = "https://imgpile.com/uploads"
         headers = {"Authorization": f"Bearer {api_key}"}
 
-        data = aiohttp.FormData()
-        data.add_field('file', io.BytesIO(binary_data), filename='generated_image.png', content_type='image/png')
-
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=data, headers=headers) as response:
+            async with session.post(url, data=binary_data, headers=headers) as response:
                 response.raise_for_status()
                 result = await response.json()
 
-        media = result["media"]
-        filename = media["filename"]
-        ext = media["ext"]
-        slug = media["slug"]
+        # レスポンスにURLが含まれるのでそのまま使う（無料プランはPNG→WebP再エンコードされるため拡張子は自前で組まない）
+        data = result["data"]
+        urls = data["urls"]
 
-        # レスポンスにURLは含まれないため slug / filename から組み立てる
-        image_url = f"https://cdn.imgpile.com/f/{filename}.{ext}"
-        viewer_url = f"https://imgpile.com/i/{slug}"
-        thumb = f"https://cdn.imgpile.com/f/{filename}_xs.{ext}"
+        image_url = urls["original"]
+        viewer_url = data["pageUrl"]
+        thumb = urls.get("thumb") or urls.get("xs")
 
         return {"imageUrl": image_url, "viewerUrl": viewer_url, "thumb": thumb}
 
